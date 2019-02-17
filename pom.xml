@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>us.terrytsai</groupId>
+    <artifactId>jofx</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <!-- Configuration -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <config.dir>${project.basedir}/config</config.dir>
+
+        <!-- Dependencies -->
+        <jaxb2-maven-plugin.version>2.2</jaxb2-maven-plugin.version>
+        <jaxb-api.version>2.3.1</jaxb-api.version>
+        <download-maven-plugin.version>1.4.1</download-maven-plugin.version>
+        <retrofit.version>2.5.0</retrofit.version>
+
+        <!-- OFX Schema -->
+        <ofx-schema.url>http://www.ofx.net/downloads/OFX%202.2.0%20schema.zip</ofx-schema.url>
+        <ofx-schema.pkg>${project.groupId}.${project.artifactId}.ofx</ofx-schema.pkg>
+        <ofx-schema.dir>${project.build.directory}/ofx</ofx-schema.dir>
+        <ofx-schema.file>${project.build.directory}/ofx/OFX2_Protocol.xsd</ofx-schema.file>
+        <ofx-schema.xjb>${config.dir}/bindings.xjb</ofx-schema.xjb>
+
+        <!-- OFX Home Schema -->
+        <ofx-home-schema.file>${config.dir}/ofxhome.xsd</ofx-home-schema.file>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>${jaxb-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.retrofit2</groupId>
+            <artifactId>retrofit</artifactId>
+            <version>${retrofit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.retrofit2</groupId>
+            <artifactId>converter-jaxb</artifactId>
+            <version>${retrofit.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <!-- Retrieve OFX Schema -->
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>${download-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>${ofx-schema.url}</url>
+                            <outputDirectory>${ofx-schema.dir}</outputDirectory>
+                            <unpack>true</unpack>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- Generate OFX Sources -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>${jaxb2-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <packageName>${ofx-schema.pkg}</packageName>
+                            <extension>true</extension>
+                            <sources>
+                                <source>${ofx-schema.file}</source>
+                                <source>${ofx-home-schema.file}</source>
+                            </sources>
+                            <xjbSources>
+                                <xjbSource>${ofx-schema.xjb}</xjbSource>
+                            </xjbSources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
